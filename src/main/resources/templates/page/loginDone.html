@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
   <th:block th:include="fragment/header"></th:block>
 
     <!-- Content Wrapper -->
@@ -26,6 +26,14 @@
 
                       <form class="user">
                         <span sec:authentication="name"></span>님 환영합니다~
+                        <span th:text="${user_name}"></span>님 환영합니다~
+                        <p>principal : <sec:authentication property="principal"/></p>
+                        <p>principal.username : <sec:authentication property="principal.username"/></p>
+                        <p>principal.password : <sec:authentication property="principal.password"/></p>
+                        <p>principal.email : <sec:authentication property="principal.email"/></p>
+                        <p>principal.enabled : <sec:authentiscation property="principal.enabled"/></p>
+                        <p>principal.accountNonExpired : <sec:authentication property="principal.accountNonExpired"/></p>
+
                       </form>
 
                       <hr>

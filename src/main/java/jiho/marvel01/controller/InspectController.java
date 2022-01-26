@@ -3,6 +3,7 @@ package jiho.marvel01.controller;
 import jiho.marvel01.dto.InspectDto;
 import jiho.marvel01.service.InspectService;
 import lombok.AllArgsConstructor;
+import org.apache.coyote.Request;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.sql.Date;
 import java.util.*;
 
-@Controller
+@RestController
 @AllArgsConstructor
 public class InspectController {
 
@@ -72,21 +73,13 @@ public class InspectController {
         return list;
     }
 
-    @GetMapping("/inspect_setting")
-    public String inspectList(Model model) {
-        List<InspectDto> inspectList = inspectService.getInspectlist();
-        model.addAttribute("InspectList",inspectList);
-        model.addAttribute("Test","test");
-        model.addAttribute("setting_value","설정 값은 이것이다.");
-        return "page/Sys_setting/inspect_setting";
-    }
-
-    @RequestMapping("/getInspectDatatable.do")
-    public @ResponseBody Object getDatatable() {
+    @RequestMapping(value = "/getInspectDatatable.do", method = RequestMethod.POST)
+    @ResponseBody
+    public Object getInspectDatatable() {
         Map<String, Object> mp = new HashMap<String, Object>();
         mp.put("data", inspectService.getInspectlist());
         Object result = mp;
-        return result;
+        return 1234;
     }
 
     @RequestMapping("/getInspectDoneList.do")

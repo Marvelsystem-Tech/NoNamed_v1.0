@@ -50,16 +50,15 @@ public class OrgController {
         return list;
     }
 
-    @GetMapping("/org_setting")
-    public String orgList(Model model) {
-        List<OrgDto> orgList = orgService.getList();
-        model.addAttribute("OrgList",orgList);
-        return "page/Sys_setting/org_setting";
-    }
+//    @GetMapping("/org_setting")
+//    public String orgList(Model model) {
+//        List<OrgDto> orgList = orgService.getList();
+//        model.addAttribute("OrgList",orgList);
+//        return "page/Sys_setting/org_setting";
+//    }
 
-    @RequestMapping("/getOrgDatatable.do")
-    public @ResponseBody Object getDatatable(HttpServletRequest request,
-                                              HttpServletResponse response) {
+    @RequestMapping(value = "/getOrgDatatable.do", method = RequestMethod.POST)
+    public @ResponseBody Object getDatatable() {
         Map<String, Object> mp = new HashMap<String, Object>();
         mp.put("data", orgService.getList());
         Object result = mp;

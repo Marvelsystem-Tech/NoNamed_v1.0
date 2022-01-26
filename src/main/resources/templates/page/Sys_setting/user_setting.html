@@ -30,66 +30,7 @@
                             <h6 class="m-0 font-weight-bold text-primary">조직도</h6>
                         </div>
                         <div class="card-body">
-                            <!-- 트리메뉴-->
-                            <!-- 마지막 리스트부분에 class="last",class="end" 넣어주세요 -->
-                            <div class="tree_box">
-                                <div class="con">
-                                    <ul id="tree_menu" class="tree_menu">
-                                        <li class="depth_1"><strong>마블시스템</strong>
-                                            <ul class="depth_2" >
-                                                <li>
-                                                    <a href="#none" value="관리부" class="tree_val"><em>폴더</em> 관리부</a>
-                                                    <ul class="depth_3">
-                                                        <li><a href="#none" value="영업지원팀" class="tree_val">영업지원팀</a></li>
-                                                        <li class="end"><a href="#none" value="관리팀" class="tree_val">관리팀</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="depth_2">
-                                                    <a href="#none" value="영업부" class="tree_val"><em>폴더</em> 영업부</a>
-                                                    <ul class="depth_3">
-                                                        <li><a href="#none" value="영업1팀" class="tree_val">영업1팀</a></li>
-                                                        <li><a href="#none" value="영업2팀" class="tree_val">영업2팀</a></li>
-                                                        <li class="end"><a href="#none" value="영업3팀" class="tree_val">영업3팀</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="last">
-                                                    <a href="#none" value="기술부" class="tree_val"><em>폴더</em> 기술부</a>
-                                                    <ul class="depth_3">
-                                                        <li><a href="#none" value="엔지니어팀" class="tree_val">엔지니어팀</a></li>
-                                                        <li><a href="#none" value="개발1팀" class="tree_val">개발1팀</a></li>
-                                                        <li class="end"><a href="#none" value="개발2팀" class="tree_val">개발2팀</a></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </li>
-<!--                                        <li class="depth_1"><strong>대금수납</strong>-->
-<!--                                            <ul class="depth_2">-->
-<!--                                                <li>-->
-<!--                                                    <a href="#none"><em>폴더</em> 일반계좌수납</a>-->
-<!--                                                    <ul class="depth_3">-->
-<!--                                                        <li><a href="#none">최신정보가져오기</a></li>-->
-<!--                                                        <li><a href="#none">수납내역조회</a></li>-->
-<!--                                                        <li><a href="#none">사납내역거래처확인</a></li>-->
-<!--                                                        <li><a href="#none">수납내역 거래처확인결과</a></li>-->
-<!--                                                        <li><a href="#none">매출채권관리</a></li>-->
-<!--                                                    </ul>-->
-<!--                                                </li>-->
-<!--                                                <li class="last">-->
-<!--                                                    <a href="#none"><em>폴더</em> 일반계좌수납</a>-->
-<!--                                                    <ul class="depth_3">-->
-<!--                                                        <li><a href="#none">최신정보가져오기</a></li>-->
-<!--                                                        <li><a href="#none">수납내역조회</a></li>-->
-<!--                                                        <li><a href="#none">사납내역거래처확인</a></li>-->
-<!--                                                        <li><a href="#none">수납내역 거래처확인결과</a></li>-->
-<!--                                                        <li class="end"><a href="#none">매출채권관리</a></li>-->
-<!--                                                    </ul>-->
-<!--                                                </li>-->
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <!--//트리메뉴-->
+                            <div id="jstree"></div>
                         </div>
                     </div>
                 </div>
@@ -452,35 +393,48 @@
 
     $(document).ready(function() {
 
+        // 트리메뉴
+      $.ajax({
+        url : "/getOrgDatatable.do",
+        type : "POST",
+        dataType : "json",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        success: function (result) {
+            console.log(result);
+          var data = [];
+          var parent = null;
+          var opened = null;
+          for(i=0;i<result.data.length;i++) {
+              if(result.data[i].topcheck === 1) {
+                  parent = "#";
+                  opened = true;
+              } else {
+                  parent = result.data[i].upperCode;
+                  opened = false;
+              }
+              data.push({
+                  'id' : result.data[i].ocode,
+                  'parent' : parent,
+                  'state' : {'opened':opened},
+                  'text' : result.data[i].oname
+              });
+          }
+          $('#jstree').jstree({
+              'core' : {
+                  'data' : data
+              }
+          });
+        },
+        error: function (thrownError) {
+          console.log(thrownError);
+        }
+      });
+
         $('#reg_email').keyup(function(){
            $('#pwd').val($(this).val());
         });
-        function tree_menu() {
-          // $('.depth_2');
-          $('ul.depth_2 >li > a').click(function(e) {
-
-            var temp_el = $(this).next('ul');
-            var depth_3 = $('.depth_3');
-
-            // 처음에 모두 슬라이드 업 시켜준다.
-            depth_3.slideUp(300);
-            // 클릭한 순간 모두 on(-)을 제거한다.// +가 나오도록
-            depth_3.parent().find('em').removeClass('on');
-
-            if (temp_el.is(':hidden')) {
-              temp_el.slideDown(300);
-              $(this).find('em').addClass('on').html('하위폴더 열림');
-            } else {
-              temp_el.slideUp(300);
-              $(this).find('em').removeClass('on').html('하위폴더 닫힘');
-            }
-            return false;
-          });
-        }
-
-        if ($('#tree_menu').is(':visible')) {
-            tree_menu();
-        }
 
         $('#reg_user').click(function(e) {
             layer_open('layer1');

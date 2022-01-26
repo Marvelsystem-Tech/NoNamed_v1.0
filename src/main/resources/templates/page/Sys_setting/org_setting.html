@@ -29,43 +29,7 @@
                             <h6 class="m-0 font-weight-bold text-primary">조직도</h6>
                         </div>
                         <div class="card-body">
-                            <!-- 트리메뉴-->
-                            <!-- 마지막 리스트부분에 class="last",class="end" 넣어주세요 -->
-                            <div class="tree_box">
-                                <div class="con">
-                                    <ul id="tree_menu" class="tree_menu">
-                                        <li class="depth_1">
-                                            <strong id="depth_1_strong"></strong>
-                                            <ul class="depth_2" >
-                                                <li>
-                                                    <a href="#none"><em>폴더</em> 관리부</a>
-                                                    <ul class="depth_3">
-                                                        <li><a href="#none" value="영업지원팀">영업지원팀</a></li>
-                                                        <li class="end"><a href="#none" value="관리팀">관리팀</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="depth_2">
-                                                    <a href="#none" value=""><em>폴더</em> 영업부</a>
-                                                    <ul class="depth_3">
-                                                        <li><a href="#none" value="영업1팀">영업1팀</a></li>
-                                                        <li><a href="#none" value="영업2팀">영업2팀</a></li>
-                                                        <li class="end"><a href="#none" value="영업3팀">영업3팀</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="last">
-                                                    <a href="#none" value=""><em>폴더</em> 기술부</a>
-                                                    <ul class="depth_3">
-                                                        <li><a href="#none" value="엔지니어팀">엔지니어팀</a></li>
-                                                        <li><a href="#none" value="개발1팀">개발1팀</a></li>
-                                                        <li class="end"><a href="#none" value="개발2팀">개발2팀</a></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <!--//트리메뉴-->
+                            <div id="jstree"></div>
                         </div>
                     </div>
                 </div>
@@ -281,7 +245,6 @@
             type : "POST",
             dataType : "json",
             success:function(data) {
-                console.log(data);
                 $('#depth_1_strong').append(data['data'][0]['name']);
             }
         });
@@ -346,9 +309,8 @@
     }
 
     function Delete(checked) {
-        var url = "deleteOrg.do";
         $.ajax({
-            url : url,
+            url : "/deleteOrg.do",
             type : "POST",
             dataType : "json",
             data : {'oid' : checked },
@@ -357,15 +319,13 @@
     }
 
     function getTop() {
-        var url = "getOrgDatatable.do";
         var top_options = '';
         $.ajax({
-            url : url,
+            url : "/getOrgDatatable.do",
             type : "POST",
             dataType : "json",
             success : function(data) {
                 var datas = data.data;
-                console.log(datas);
 
                 if(datas.length > 0) {
                     top_options += '<option value="없음">없음</option>';
@@ -382,7 +342,67 @@
         });
     }
 
+    // 트리메뉴
+    function tree_menu() {
+      $('ul.depth_2 >li > a').click(function(e) {
+        var temp_el = $(this).next('ul');
+        var depth_3 = $('.depth_3');
+
+        depth_3.slideUp(300);
+        depth_3.parent().find('em').removeClass('on');
+
+        if (temp_el.is(':hidden')) {
+          temp_el.slideDown(300);
+          $(this).find('em').addClass('on').html('하위폴더 열림');
+        } else {
+          temp_el.slideUp(300);
+          $(this).find('em').removeClass('on').html('하위폴더 닫힘');
+        }
+        return false;
+      });
+    }
+
     $(document).ready(function() {
+
+        // 트리메뉴
+      $.ajax({
+        url : "/getOrgDatatable.do",
+        type : "POST",
+        dataType : "json",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        success: function (result) {
+            console.log(result);
+          var data = [];
+          var parent = null;
+          var opened = null;
+          for(i=0;i<result.data.length;i++) {
+              if(result.data[i].topcheck === 1) {
+                  parent = "#";
+                  opened = true;
+              } else {
+                  parent = result.data[i].upperCode;
+                  opened = false;
+              }
+              data.push({
+                  'id' : result.data[i].ocode,
+                  'parent' : parent,
+                  'state' : {'opened':opened},
+                  'text' : result.data[i].oname
+              });
+          }
+          $('#jstree').jstree({
+              'core' : {
+                  'data' : data
+              }
+          });
+        },
+        error: function (thrownError) {
+          console.log(thrownError);
+        }
+      });
+
         $('#reg_org').click(function(e) {
             e.preventDefault();
             var upperCode = $('.upper_select option:selected').attr('data-upperCode'),
@@ -415,64 +435,6 @@
             });
             location.reload();
         })
-
-        // 최상위 가져와뿌리기
-        getTop();
-        getTopOne();
-
-        function createTree() {
-            var topMenu = $('#tree_menu li.depth_1');
-            var depth2_ul = $('ul.depth_2');
-            var test =
-                '<li><a href="#none"><em>폴더</em> 관리부</a>'+
-                '<ul class="depth_3">'+
-                '<li><a href="#none" value="영업지원팀">영업지원팀</a></li>'+
-                '<li class="end"><a href="#none" value="관리팀">관리팀</a></li>'+
-                '</ul>'+ '</li>';
-            $.ajax({
-                url : 'getOrgDatatable.do',
-                type : "POST",
-                dataType : "json",
-                success : function(data) {
-                    var datas = data.data;
-                    if(datas.length > 0) {
-                        top_options += '<option value="없음">없음</option>';
-                        for(i=0; i<datas.length; i++) {
-                            top_options +=
-                                "<option value="+datas[i]['oname']+" data-upperCode="+datas[i]['ocode']+" data-firstOid="+datas[i]['oid']+">"
-                                +datas[i]['oname']+"</option>";
-                        }
-                    } else {
-                        top_options = '<option value="없음">없음</option>';
-                    }
-                    $('.upper_select').html(top_options);
-                }
-            });
-        }
-
-        // 트리메뉴
-        function tree_menu() {
-          $('ul.depth_2 >li > a').click(function(e) {
-            var temp_el = $(this).next('ul');
-            var depth_3 = $('.depth_3');
-
-            depth_3.slideUp(300);
-            depth_3.parent().find('em').removeClass('on');
-
-            if (temp_el.is(':hidden')) {
-              temp_el.slideDown(300);
-              $(this).find('em').addClass('on').html('하위폴더 열림');
-            } else {
-              temp_el.slideUp(300);
-              $(this).find('em').removeClass('on').html('하위폴더 닫힘');
-            }
-            return false;
-          });
-        }
-
-        if ($('#tree_menu').is(':visible')) {
-            tree_menu();
-        }
 
         // 신규등록 이벤트
         $('#register_btn').click(function(e) {

@@ -5,6 +5,9 @@ import jiho.marvel01.service.UserService;
 import jiho.marvel01.util.ExcelRead;
 import jiho.marvel01.util.ExcelReadOption;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.*;
 
 @Controller
@@ -37,8 +41,7 @@ public class UserController {
                            @RequestParam("corp") String corp,
                            @RequestParam("dept") String dept,
                            @RequestParam("ranks") String ranks,
-                           @RequestParam("codes") String codes,
-                           @RequestParam("status") String status) {
+                           @RequestParam("codes") String codes) {
         Map<String, String> list = new HashMap<String, String>();
         list.put("email", email);
         list.put("name", name);
@@ -47,14 +50,16 @@ public class UserController {
         list.put("dept", dept);
         list.put("ranks", ranks);
         list.put("codes", codes);
-        list.put("status", status);
         userService.registerUser(list);
         return "redirect:/register?done=1";
 
     }
 
-    @PostMapping(value = "/loginSuccess.do")
-    public String loginSuccess() {
+    @RequestMapping(value = "/loginSuccess.do")
+    public String loginSuccess(Model model) {
+
+        model.addAttribute("user_name","test");
+
         return "redirect:/loginDone";
     }
 

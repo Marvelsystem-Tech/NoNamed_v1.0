@@ -259,7 +259,11 @@
 
       $.ajax({
         type : "POST",
-        url : "getInspectDatatable.do",
+        url : "/getInspectDatatable.do",
+        dataType : "json",
+        beforeSend : function(xhr) {
+          xhr.setRequestHeader(header, token);
+        },
         success: function(data){
           var inspectData = data.data;
           console.log(inspectData);
